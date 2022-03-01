@@ -1,3 +1,11 @@
+# Notes
+
+Run customized FLASH test.
+
+```
+ make BOARD=soctest emu FLASH_IMG=../ysyxSoC-new/ysyx/program/bin/flash/memtest-flash.bin
+```
+
 # NutShell (果壳)
 
 NutShell is a processor developed by the OSCPU (Open Source Chip Project by University) team.

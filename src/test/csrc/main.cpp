@@ -20,6 +20,7 @@ const struct option Emulator::long_options[] = {
   { "seed",           1, NULL, 's' },
   { "max-cycles",     1, NULL, 'C' },
   { "image",          1, NULL, 'i' },
+  { "dump-wave",      0, NULL, 'd' },
   { "flash-image",    1, NULL, 'f' },
   { "log-begin",      1, NULL, 'b' },
   { "log-end",        1, NULL, 'e' },
@@ -32,6 +33,7 @@ void Emulator::print_help(const char *file) {
   printf("Usage: %s [OPTION...]\n", file);
   printf("\n");
   printf("  -s, --seed=NUM         use this seed\n");
+  printf("  -d, --dump-wave        enable wave\n");
   printf("  -C, --max-cycles=NUM   execute at most NUM cycles\n");
   printf("  -i, --image=FILE       run with this image file\n");
   printf("  -f, --flash-image=FILE run with this image file in FLASH\n");
@@ -45,7 +47,7 @@ void Emulator::print_help(const char *file) {
 std::vector<const char *> Emulator::parse_args(int argc, const char *argv[]) {
   std::vector<const char *> args = { argv[0] };
   int o;
-  while ( (o = getopt_long(argc, const_cast<char *const*>(argv), "-s:C:hi:m:b:e:v:f:", long_options, NULL)) != -1) {
+  while ( (o = getopt_long(argc, const_cast<char *const*>(argv), "-s:C:hi:m:b:e:v:f:d:", long_options, NULL)) != -1) {
     switch (o) {
       case 's': 
         if(std::string(optarg) != "NO_SEED") {
@@ -65,6 +67,7 @@ std::vector<const char *> Emulator::parse_args(int argc, const char *argv[]) {
       case 'b': log_begin = atoll(optarg);  break;
       case 'e': log_end = atoll(optarg); break;
       case 'v': log_level = getLogLevel(optarg); break;
+      case 'd': dump_wave = true; break;
       default:
                 print_help(argv[0]);
                 exit(0);

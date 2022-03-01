@@ -20,6 +20,7 @@ extern "C" void flash_memcpy(void *src, int len);
 class Emulator {
   const char *image;
   char *flash_image;
+  bool dump_wave;
   std::shared_ptr<VysyxSoCFull> dut_ptr;
   // std::shared_ptr<VNutShellSimTop> dut_ptr;
 #if VM_TRACE
@@ -61,7 +62,7 @@ class Emulator {
     image(nullptr),
     flash_image(nullptr),
     dut_ptr(new std::remove_reference<decltype(*dut_ptr)>::type),
-    seed(0), max_cycles(-1), cycles(0),
+    seed(0), max_cycles(-1), cycles(0),dump_wave(false),
     log_begin(0), log_end(-1), log_level(LOG_ALL)
   {
     // init emu
@@ -114,11 +115,21 @@ class Emulator {
     dut_ptr->clock = 0;
     dut_ptr->eval();
 
+#if VM_TRACE
+    if(dump_wave) {
+        tfp->dump(cycles);
+    }
+#endif
+
+    cycles ++;
+
     dut_ptr->clock = 1;
     dut_ptr->eval();
 
 #if VM_TRACE
-    tfp->dump(cycles);
+    if(dump_wave) {
+        tfp->dump(cycles);
+    }
 #endif
 
     cycles ++;
@@ -136,11 +147,13 @@ class Emulator {
     const int stuck_limit = 2000;
 
 #if VM_TRACE
-    Verilated::traceEverOn(true);	// Verilator must compute traced signals
-    VL_PRINTF("Enabling waves...\n");
-    tfp = new VerilatedVcdC;
-    dut_ptr->trace(tfp, 99);	// Trace 99 levels of hierarchy
-    tfp->open("vlt_dump.vcd");	// Open the dump file
+    if(dump_wave) {
+        Verilated::traceEverOn(true);	// Verilator must compute traced signals
+        VL_PRINTF("Enabling waves...\n");
+        tfp = new VerilatedVcdC;
+        dut_ptr->trace(tfp, 99);	// Trace 99 levels of hierarchy
+        tfp->open("vlt_dump.vcd");	// Open the dump file
+    }
 #endif
 
     while (!is_finish() && n > 0) {
@@ -179,7 +192,9 @@ class Emulator {
               dut_ptr->io_difftest_intrNO, dut_ptr->io_difftest_priviledgeMode, 
               dut_ptr->io_difftest_isMultiCommit)) {
 #if VM_TRACE
+        if(dump_wave) {
             tfp->close();
+        }
 #endif
             set_abort();
           }

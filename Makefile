@@ -1,11 +1,12 @@
 TOP = TopMain
+SOC_HOME ?= ../ysyxSoC-new
 FPGATOP = NutShellFPGATop
 BUILD_DIR = ./build
 TOP_V = $(BUILD_DIR)/$(TOP).v
 SCALA_FILE = $(shell find ./src/main/scala -name '*.scala')
 TEST_FILE = $(shell find ./src/test/scala -name '*.scala')
 MEM_GEN = ./scripts/vlsi_mem_gen
-FLASH_IMG = ../ysyxSoC-new/ysyx/program/bin/flash/hello-flash.bin
+FLASH_IMG = $(SOC_HOME)/ysyx/program/bin/flash/hello-flash.bin
 
 USE_READY_TO_RUN_NEMU = true
 
@@ -13,7 +14,7 @@ SIMTOP = top.TopMain
 IMAGE ?= ready-to-run/linux.bin
 
 DATAWIDTH ?= 64
-BOARD ?= sim  # sim  pynq  axu3cg soctest
+BOARD ?= soctest  # sim  pynq  axu3cg soctest
 CORE  ?= inorder  # inorder  ooo  embedded
 
 .DEFAULT_GOAL = verilog
@@ -53,10 +54,9 @@ $(SIM_TOP_V): $(SCALA_FILE) $(TEST_FILE)
 	mill chiselModule.test.runMain $(SIMTOP) -td $(@D) --output-file $(@F) BOARD=$(BOARD) CORE=$(CORE)
 	sed -i -e 's/_\(aw\|ar\|w\|r\|b\)_\(\|bits_\)/_\1/g' $@
 
-ysyxSoC_DIR = ../ysyxSoC-new
-SOC_DIR = $(ysyxSoC_DIR)/ysyx/peripheral
-RAM_DIR = $(ysyxSoC_DIR)/ysyx/ram
-EMU_SOC_V = $(shell find $(SOC_DIR) -name '*.v') $(shell find $(RAM_DIR) -name '*.v') $(ysyxSoC_DIR)/ysyx/soc/ysyxSoCFull.v
+SOC_DIR = $(SOC_HOME)/ysyx/peripheral
+RAM_DIR = $(SOC_HOME)/ysyx/ram
+EMU_SOC_V = $(shell find $(SOC_DIR) -name '*.v') $(shell find $(RAM_DIR) -name '*.v') $(SOC_HOME)/ysyx/soc/ysyxSoCFull.v
 
 EMU_CSRC_DIR = $(abspath ./src/test/csrc)
 EMU_VSRC_DIR = $(abspath ./src/test/vsrc)
@@ -85,6 +85,7 @@ VERILATOR_FLAGS = --top-module $(SIM_TOP) \
   --timescale "1ns/1ns" \
   --autoflush \
   -Wno-WIDTH \
+  --trace \
   -Wno-PINMISSING
 
 EMU_MK := $(BUILD_DIR)/emu-compile/V$(SIM_TOP).mk
@@ -118,6 +119,9 @@ LOG_LEVEL ?= ALL
 
 emu: $(EMU)
 	@$(EMU) -i $(IMAGE) $(SEED) -b $(LOG_BEGIN) -e $(LOG_END) -v $(LOG_LEVEL) -f $(FLASH_IMG)
+
+emu-wave: $(EMU)
+	@$(EMU) -i $(IMAGE) $(SEED) -b $(LOG_BEGIN) -e $(LOG_END) -v $(LOG_LEVEL) -f $(FLASH_IMG) --dump-wave
 
 cache:
 	$(MAKE) emu IMAGE=Makefile
