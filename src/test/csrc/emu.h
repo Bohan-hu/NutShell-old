@@ -19,6 +19,7 @@ extern "C" void flash_memcpy(void *src, int len);
 
 class Emulator {
   const char *image;
+  char *flash_image;
   std::shared_ptr<VysyxSoCFull> dut_ptr;
   // std::shared_ptr<VNutShellSimTop> dut_ptr;
 #if VM_TRACE
@@ -58,6 +59,7 @@ class Emulator {
   // argv decay to the secondary pointer
   Emulator(int argc, const char *argv[]):
     image(nullptr),
+    flash_image(nullptr),
     dut_ptr(new std::remove_reference<decltype(*dut_ptr)>::type),
     seed(0), max_cycles(-1), cycles(0),
     log_begin(0), log_end(-1), log_level(LOG_ALL)
@@ -85,7 +87,7 @@ class Emulator {
     // init flash
     // flash_init("/home53/wkf/ysyx/ysyxSoC/src/main/resources/ysyx-peripheral/bin/hello-flash.bin");
     // flash_init("/home53/wkf/ysyx/hello-loader.bin");
-    flash_init("/home53/wkf/ysyx/ysyxSoC-new/ysyx/program/bin/loader/rtthread-loader.bin");
+    flash_init(flash_image);
     // flash_init("/home53/wkf/ysyx/ysyxSoC-new/ysyx/program/bin/flash/rtthread-flash.bin");
     // flash_init("/home53/wkf/ysyx/rt-thread/bsp/qemu-riscv-virt64/rtthread.bin");
 

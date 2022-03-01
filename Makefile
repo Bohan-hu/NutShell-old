@@ -5,6 +5,7 @@ TOP_V = $(BUILD_DIR)/$(TOP).v
 SCALA_FILE = $(shell find ./src/main/scala -name '*.scala')
 TEST_FILE = $(shell find ./src/test/scala -name '*.scala')
 MEM_GEN = ./scripts/vlsi_mem_gen
+FLASH_IMG = ../ysyxSoC-new/ysyx/program/bin/flash/hello-flash.bin
 
 USE_READY_TO_RUN_NEMU = true
 
@@ -116,7 +117,7 @@ LOG_END ?= 0
 LOG_LEVEL ?= ALL
 
 emu: $(EMU)
-	@$(EMU) -i $(IMAGE) $(SEED) -b $(LOG_BEGIN) -e $(LOG_END) -v $(LOG_LEVEL)
+	@$(EMU) -i $(IMAGE) $(SEED) -b $(LOG_BEGIN) -e $(LOG_END) -v $(LOG_LEVEL) -f $(FLASH_IMG)
 
 cache:
 	$(MAKE) emu IMAGE=Makefile

@@ -20,6 +20,7 @@ const struct option Emulator::long_options[] = {
   { "seed",           1, NULL, 's' },
   { "max-cycles",     1, NULL, 'C' },
   { "image",          1, NULL, 'i' },
+  { "flash-image",    1, NULL, 'f' },
   { "log-begin",      1, NULL, 'b' },
   { "log-end",        1, NULL, 'e' },
   { "verbose",        1, NULL, 'v' },
@@ -30,20 +31,21 @@ const struct option Emulator::long_options[] = {
 void Emulator::print_help(const char *file) {
   printf("Usage: %s [OPTION...]\n", file);
   printf("\n");
-  printf("  -s, --seed=NUM        use this seed\n");
-  printf("  -C, --max-cycles=NUM  execute at most NUM cycles\n");
-  printf("  -i, --image=FILE      run with this image file\n");
-  printf("  -b, --log-begin=NUM   display log from NUM th cycle\n");
-  printf("  -e, --log-end=NUM     stop display log at NUM th cycle\n");
-  printf("  -v, --verbose=STR     verbosity level, can be one of [ALL, DEBUG, INFO, WARN, ERROR]\n");
-  printf("  -h, --help            print program help info\n");
+  printf("  -s, --seed=NUM         use this seed\n");
+  printf("  -C, --max-cycles=NUM   execute at most NUM cycles\n");
+  printf("  -i, --image=FILE       run with this image file\n");
+  printf("  -f, --flash-image=FILE run with this image file in FLASH\n");
+  printf("  -b, --log-begin=NUM    display log from NUM th cycle\n");
+  printf("  -e, --log-end=NUM      stop display log at NUM th cycle\n");
+  printf("  -v, --verbose=STR      verbosity level, can be one of [ALL, DEBUG, INFO, WARN, ERROR]\n");
+  printf("  -h, --help             print program help info\n");
   printf("\n");
 }
 
 std::vector<const char *> Emulator::parse_args(int argc, const char *argv[]) {
   std::vector<const char *> args = { argv[0] };
   int o;
-  while ( (o = getopt_long(argc, const_cast<char *const*>(argv), "-s:C:hi:m:b:e:v:", long_options, NULL)) != -1) {
+  while ( (o = getopt_long(argc, const_cast<char *const*>(argv), "-s:C:hi:m:b:e:v:f:", long_options, NULL)) != -1) {
     switch (o) {
       case 's': 
         if(std::string(optarg) != "NO_SEED") {
@@ -54,6 +56,10 @@ std::vector<const char *> Emulator::parse_args(int argc, const char *argv[]) {
       case 'C': max_cycles = atoll(optarg);  break;
       case 'i': image = optarg;
                 args.push_back("-i");
+                args.push_back(optarg);
+                break;
+      case 'f': flash_image = optarg;
+                args.push_back("-f");
                 args.push_back(optarg);
                 break;
       case 'b': log_begin = atoll(optarg);  break;
