@@ -1,5 +1,5 @@
 TOP = TopMain
-SOC_HOME ?= ../ysyxSoC-new
+SOC_HOME ?= ../ysyxSoC
 FPGATOP = NutShellFPGATop
 BUILD_DIR = ./build
 TOP_V = $(BUILD_DIR)/$(TOP).v
@@ -74,6 +74,7 @@ VERILATOR_FLAGS = --top-module $(SIM_TOP) \
   +define+RV$(DATAWIDTH)=1 \
   +define+VERILATOR=1 \
   +define+PRINTF_COND=1 \
+  +define+STOP_COND=0 \
   --assert \
   --output-split 5000 \
   --output-split-cfuncs 5000 \
@@ -122,6 +123,19 @@ emu: $(EMU)
 
 emu-wave: $(EMU)
 	@$(EMU) -i $(IMAGE) $(SEED) -b $(LOG_BEGIN) -e $(LOG_END) -v $(LOG_LEVEL) -f $(FLASH_IMG) --dump-wave
+
+
+FSDB = build/debug.fsdb
+
+fsdb: $(FSDB)
+
+$(FSDB): vlt_dump.vcd
+	vcd2fsdb vlt_dump.vcd -o build/debug.fsdb > /dev/null 2>&1
+
+verdi: $(FSDB)
+	echo "module TOP(); ysyxSoCFull ysyxSoCFull(); endmodule" > build/fakeTop.v
+	echo -e "build/fakeTop.v\nbuild/ysyxSoCFull.v\n$(SOC_HOME)/ysyx/soc/ysyxSoCFull.v" > build/filelist.f
+	verdi -f build/filelist.f -ssf build/debug.fsdb -nologo &
 
 cache:
 	$(MAKE) emu IMAGE=Makefile
